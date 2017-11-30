@@ -21,14 +21,14 @@ func TestMain(m *testing.M) {
 	defer os.Exit(exitCode)
 }
 
-func WithEthRPC(f func(rpc EthRPC)) func() {
+func WithEthRPC(f func(rpc *EthRPC)) func() {
 	return func() {
 		f(NewEthRPC(os.Getenv("GETH_ENDPOINT")))
 	}
 }
 
 func TestGetBalance(t *testing.T) {
-	Convey("WithEthRPC", t, WithEthRPC(func(rpc EthRPC) {
+	Convey("WithEthRPC", t, WithEthRPC(func(rpc *EthRPC) {
 		Convey("Success", func() {
 			balance, err := rpc.GetBalance("0x8FfCf7674ED27c7949Ceda9a0bD6799fe74aCf47", "latest")
 			So(err, ShouldBeNil)
@@ -48,7 +48,7 @@ func TestGetBalance(t *testing.T) {
 }
 
 func TestGetTransactionCount(t *testing.T) {
-	Convey("WithEthRPC", t, WithEthRPC(func(rpc EthRPC) {
+	Convey("WithEthRPC", t, WithEthRPC(func(rpc *EthRPC) {
 		Convey("Success", func() {
 			count, err := rpc.GetTransactionCount(ethutil.AddressHex(1), "pending")
 			So(err, ShouldBeNil)
@@ -69,7 +69,7 @@ func TestGetTransactionCount(t *testing.T) {
 }
 
 func TestSendRawTrancastion(t *testing.T) {
-	Convey("WithEthRPC", t, WithEthRPC(func(rpc EthRPC) {
+	Convey("WithEthRPC", t, WithEthRPC(func(rpc *EthRPC) {
 		Convey("Success", func() {
 			txHash, err := rpc.SendRawTransaction(
 				signedTransactionData(ethutil.PrivateKeyHex(1), ethutil.AddressHex(2)),
