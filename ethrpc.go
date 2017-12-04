@@ -1,18 +1,20 @@
 package ethrpc
 
 import (
-	"context"
+	"net/http"
 
 	"github.com/GuiltyMorishita/jsonrpc"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"google.golang.org/appengine"
 	"google.golang.org/appengine/urlfetch"
 )
 
 // EthRPCer ...
 type EthRPCer interface {
-	GetBalance(aeCtx context.Context, address, block string) (balance string, err error)
-	GetTransactionCount(aeCtx context.Context, address, block string) (count uint64, err error)
-	SendRawTransaction(aeCtx context.Context, txData string) (txHash string, err error)
+	GetBalance(address, block string) (balance string, err error)
+	GetTransactionCount(address, block string) (count uint64, err error)
+	SendRawTransaction(txData string) (txHash string, err error)
+	UseAppEngineContext(r *http.Request)
 }
 
 // EthRPC ...
@@ -27,8 +29,7 @@ func NewEthRPC(endpoint string) *EthRPC {
 	}
 }
 
-func (rpc *EthRPC) GetBalance(aeCtx context.Context, address, block string) (balance string, err error) {
-	rpc.setAppEngineContext(aeCtx)
+func (rpc *EthRPC) GetBalance(address, block string) (balance string, err error) {
 	response, err := rpc.rpcClient.Call("eth_getBalance", address, block)
 	if err != nil {
 		return
@@ -43,8 +44,7 @@ func (rpc *EthRPC) GetBalance(aeCtx context.Context, address, block string) (bal
 	return
 }
 
-func (rpc *EthRPC) GetTransactionCount(aeCtx context.Context, address, block string) (count uint64, err error) {
-	rpc.setAppEngineContext(aeCtx)
+func (rpc *EthRPC) GetTransactionCount(address, block string) (count uint64, err error) {
 	response, err := rpc.rpcClient.Call("eth_getTransactionCount", address, block)
 	if err != nil {
 		return
@@ -61,8 +61,7 @@ func (rpc *EthRPC) GetTransactionCount(aeCtx context.Context, address, block str
 	return
 }
 
-func (rpc *EthRPC) SendRawTransaction(aeCtx context.Context, txData string) (txHash string, err error) {
-	rpc.setAppEngineContext(aeCtx)
+func (rpc *EthRPC) SendRawTransaction(txData string) (txHash string, err error) {
 	response, err := rpc.rpcClient.Call("eth_sendRawTransaction", txData)
 	if err != nil {
 		return
@@ -77,8 +76,7 @@ func (rpc *EthRPC) SendRawTransaction(aeCtx context.Context, txData string) (txH
 	return
 }
 
-func (rpc *EthRPC) setAppEngineContext(aeCtx context.Context) {
-	if aeCtx != nil {
-		rpc.rpcClient.SetHTTPClient(urlfetch.Client(aeCtx))
-	}
+func (rpc *EthRPC) UseAppEngineContext(r *http.Request) {
+	aeCtx := appengine.NewContext(r)
+	rpc.rpcClient.SetHTTPClient(urlfetch.Client(aeCtx))
 }
