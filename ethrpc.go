@@ -1,11 +1,10 @@
 package ethrpc
 
 import (
-	"net/http"
+	"context"
 
 	"github.com/GuiltyMorishita/jsonrpc"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"google.golang.org/appengine"
 	"google.golang.org/appengine/urlfetch"
 )
 
@@ -14,7 +13,7 @@ type EthRPCer interface {
 	GetBalance(address, block string) (balance string, err error)
 	GetTransactionCount(address, block string) (count uint64, err error)
 	SendRawTransaction(txData string) (txHash string, err error)
-	UseAppEngineContext(r *http.Request)
+	UseAppEngineContext(ctx context.Context)
 }
 
 // EthRPC ...
@@ -76,7 +75,6 @@ func (rpc *EthRPC) SendRawTransaction(txData string) (txHash string, err error) 
 	return
 }
 
-func (rpc *EthRPC) UseAppEngineContext(r *http.Request) {
-	aeCtx := appengine.NewContext(r)
-	rpc.rpcClient.SetHTTPClient(urlfetch.Client(aeCtx))
+func (rpc *EthRPC) UseAppEngineContext(ctx context.Context) {
+	rpc.rpcClient.SetHTTPClient(urlfetch.Client(ctx))
 }
